@@ -1,0 +1,24 @@
+stages:
+  - build
+  - deploy
+
+build:
+  stage: build
+  image: docker:19.03.12
+  services:
+    - docker:dind
+  script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - docker build -t $CI_REGISTRY_IMAGE/php -f docker/php.Dockerfile .
+    - docker build -t $CI_REGISTRY_IMAGE/nginx -f docker/nginx.Dockerfile .
+    - docker build -t $CI_REGISTRY_IMAGE/mysql -f docker/mysql.Dockerfile .
+    - docker push $CI_REGISTRY_IMAGE/php
+    - docker push $CI_REGISTRY_IMAGE/nginx
+    - docker push $CI_REGISTRY_IMAGE/mysql
+
+deploy:
+  stage: deploy
+  image: alpine
+  script:
+    - apk add --no-cache curl
+    - curl -X POST -F token=$CI_DEPLOY_TOKEN -F ref=master "https://gitlab.com/api/v4/projects/$CI_PROJECT_ID/trigger/pipeline"
