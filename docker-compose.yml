@@ -1,4 +1,4 @@
-#version: '3.8'  # Opsiyonel; Docker Compose'un yeni versiyonlarında bu satırı çıkarabilirsiniz.
+#version: '3.8'  # Optional
 
 services:
   db:
@@ -29,6 +29,18 @@ services:
     depends_on:
       - php
       - db
+
+  mailhog:
+    image: mailhog/mailhog
+    ports:
+      - "8025:8025" # Web interface
+      - "1025:1025" # SMTP Server
+
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - "8080:8080"
 
 volumes:
   db_data:
